@@ -47,8 +47,8 @@ const uint8_t BIT_DEPTH = 16;
 //static void
 //FCC2STR(char *str, UINT32 fcc); // used in dump_info
 
-//static void
-//set_core(PlayerBase *player, UINT8 devId, UINT32 coreId); // sets emulation core. For example, you could use MAME's code to emulate the Mega Drive chip, or you could use Nuked's code.
+static void
+set_core(PlayerBase *player, UINT8 devId, UINT32 coreId); // sets emulation core. For example, you could use MAME's code to emulate the Mega Drive chip, or you could use Nuked's code.
 
 //static void
 //dump_info(PlayerBase *player);
@@ -196,6 +196,9 @@ int main(int argc, const char *argv[]) { // write pcm file & info file
 		player.SetLoopCount(vgmplay->GetModifiedLoopCount(LOOPS));
 	}
 	
+	//set_core(plrEngine,DEVID_NES_APU,FCC_NSFP);
+	set_core(plrEngine,DEVID_NES_APU,FCC_MAME); // this seems to handle "using the DPCM to lower the volume of the triangle" better than the NSFP nes core.
+
 	//write chiptune metadata information that JS might need to a txt file.
 	// system (for mono or stereo). tag 9
 	// song length
@@ -272,3 +275,15 @@ int main(int argc, const char *argv[]) { // write pcm file & info file
 //	tags = plrEngine->GetTags();
 //	return tags[9]
 //}
+
+static void set_core(PlayerBase *player, UINT8 devId, UINT32 coreId) {
+	PLR_DEV_OPTS devOpts;
+	UINT32 id;
+
+	/* just going to set the first instance */
+	id = PLR_DEV_ID(devId,0);
+	if(player->GetDeviceOptions(id,devOpts)) return;
+	devOpts.emuCore[0] = coreId;
+	player->SetDeviceOptions(id,devOpts);
+return;
+}
